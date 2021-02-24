@@ -1,0 +1,11 @@
+Debug: false
+ServerPort: 4000
+Database:
+  Engine: sqlite3
+  path: database.db
+  # Username: postgres
+  # Password: repl_secret
+  # Host: postgresql-master
+  # Port: 5432
+  # Database: database
+  # SSLMode: disable
