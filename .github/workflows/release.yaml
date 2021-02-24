@@ -9,6 +9,10 @@ jobs:
   build:
     name: Create Release
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        go: ["1.16"]
+        swag: ["1.7.0"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -17,17 +21,16 @@ jobs:
       - name: Setup golang
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: ${{ matrix.go }}
       - name: Install swag
-        run: go get -u -v github.com/swaggo/swag/cmd/swag
+        run: |
+          wget https://github.com/swaggo/swag/releases/download/v${{ matrix.swag }}/swag_${{ matrix.swag }}_Linux_x86_64.tar.gz
+          mkdir download
+          tar -zxvf swag_${{ matrix.swag }}_Linux_x86_64.tar.gz -C download
+          sudo mv download/swag /usr/bin
+          rm -rf swag_${{ matrix.swag }}_Linux_x86_64.tar.gz download
       - name: Build server
         run: make
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v3
-        with:
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
@@ -35,4 +38,3 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
