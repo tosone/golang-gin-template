@@ -12,7 +12,7 @@ build: generate
 
 .PHONY: release
 release: generate
-	go build -v -o release/${Target} -tags=jsoniter -ldflags \
+	go build -v -o bin/${Target} -tags=jsoniter -ldflags \
 	"-s -w -X main.BuildStamp=${BuildStamp} -X main.GitHash=${GitHash} -X main.Version=${Version}"
 
 .PHONY: generate
@@ -21,7 +21,7 @@ generate:
 
 .PHONY: lint
 lint:
-	golangci-lint run -v
+	golangci-lint run -v --timeout=5m
 
 .PHONY: image
 image:

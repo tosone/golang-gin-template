@@ -1,0 +1,48 @@
+name: Server Build CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  builder:
+    name: builder
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        go: ["1.16"]
+        swag: ["1.7.0"]
+        golangci-lint: ["1.37.1"]
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Install swag
+        run: |
+          wget https://github.com/swaggo/swag/releases/download/v${{ matrix.swag }}/swag_${{ matrix.swag }}_Linux_x86_64.tar.gz
+          mkdir download
+          tar -zxvf swag_${{ matrix.swag }}_Linux_x86_64.tar.gz -C download
+          sudo mv download/swag /usr/bin
+          rm -rf swag_${{ matrix.swag }}_Linux_x86_64.tar.gz download
+      - name: Install golangci-lint
+        run: |
+          wget https://github.com/golangci/golangci-lint/releases/download/v${{ matrix.golangci-lint }}/golangci-lint-${{ matrix.golangci-lint }}-linux-amd64.tar.gz
+          mkdir download
+          tar -zxvf golangci-lint-${{ matrix.golangci-lint }}-linux-amd64.tar.gz -C download
+          sudo mv download/golangci-lint-${{ matrix.golangci-lint }}-linux-amd64/golangci-lint /usr/bin
+          rm -rf golangci-lint-${{ matrix.golangci-lint }}-linux-amd64.tar.gz download
+      - name: Generate docs
+        run: make generate
+      - name: Linter
+        run: make lint
+      - name: Build server
+        run: make
