@@ -40,9 +40,7 @@ jobs:
           tar -zxvf golangci-lint-${{ matrix.golangci-lint }}-linux-amd64.tar.gz -C download
           sudo mv download/golangci-lint-${{ matrix.golangci-lint }}-linux-amd64/golangci-lint /usr/bin
           rm -rf golangci-lint-${{ matrix.golangci-lint }}-linux-amd64.tar.gz download
-      - name: Generate docs
-        run: make generate
       - name: Linter
         run: make lint
       - name: Build server
-        run: make
+        run: make build

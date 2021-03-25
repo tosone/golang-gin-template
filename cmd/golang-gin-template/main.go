@@ -7,14 +7,14 @@ import (
 	"github.com/tosone/golang-gin-template/pkg/version"
 )
 
-// Version version command output msg
-var Version = "no provided"
+// VERSION version command output msg
+var VERSION = "no provided"
 
-// BuildStamp version command output msg
-var BuildStamp = "no provided"
+// BUILDSTAMP version command output msg
+var BUILDSTAMP = "no provided"
 
-// GitHash version command output msg
-var GitHash = "no provided"
+// GITHASH version command output msg
+var GITHASH = "no provided"
 
 //go:generate swag init
 // @title golang-gin-template API
@@ -25,7 +25,7 @@ var GitHash = "no provided"
 // @BasePath /api
 func main() {
 	// set version command output
-	version.Setting(Version, BuildStamp, GitHash)
+	version.Setting(VERSION, BUILDSTAMP, GITHASH)
 
 	// init cobra commander
 	if err := cmd.RootCmd.Execute(); err != nil {

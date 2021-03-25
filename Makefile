@@ -1,31 +1,39 @@
-app_name   = golang-gin-template
-
-BuildStamp = $(shell date '+%Y%m%d%H%M%S')
-GitHash    = $(shell git rev-parse HEAD)
-Version    = $(shell git describe --abbrev=0 --tags --always)
-Target     = ${app_name}
+TARGETS     ?= golang-gin-template
+PKG          = github.com/tosone/golang-gin-template
+CMD_DIR      = ./cmd
+OUTPUT_DIR   = ./bin
+BUILD_DIR    = ./build
+BUILDSTAMP   = $(shell date '+%Y%m%d%H%M%S')
+GITHASH      = $(shell git rev-parse HEAD)
+VERSION      = $(shell git describe --abbrev=0 --tags --always)
 
 .PHONY: build
-build: generate
-	go build -v -o bin/${Target} -tags=jsoniter -ldflags \
-	"-X main.BuildStamp=${BuildStamp} -X main.GitHash=${GitHash} -X main.Version=${Version}"
+build:
+	@for target in $(TARGETS); do                                     \
+	  go generate $(CMD_DIR)/$${target};                              \
+	  go build -v -o $(OUTPUT_DIR)/$${target}                         \
+	    -ldflags "-s -w -X main.Version=$(VERSION)                    \
+	    -X main.BuildStamp=$(BUILDSTAMP) -X main.GitHash=$(GITHASH)"  \
+	    $(CMD_DIR)/$${target};                                        \
+	done
 
-.PHONY: release
-release: generate
-	go build -v -o bin/${Target} -tags=jsoniter -ldflags \
-	"-s -w -X main.BuildStamp=${BuildStamp} -X main.GitHash=${GitHash} -X main.Version=${Version}"
-
-.PHONY: generate
-generate:
-	go generate
+.PHONY: image
+image:
+	@for target in $(TARGETS); do                                     \
+	  image=$(IMAGE_PREFIX)$${target}$(IMAGE_SUFFIX);                 \
+	  echo Building $${image}:$(VERSION);                             \
+	  docker build -t $${image}:$(VERSION)                            \
+	    --build-arg PKG=${PKG}                                        \
+	    --build-arg GITCOMMIT=${COMMIT}                               \
+	    --build-arg BUILDVERSION=${COMMIT}                            \
+	    --build-arg BUILDDATE=${COMMIT}                               \
+	    --build-arg TARGET=$${target}                                 \
+	    -f $(BUILD_DIR)/$${target}/Dockerfile .;                      \
+	done
 
 .PHONY: lint
 lint:
 	golangci-lint run -v --timeout=5m
-
-.PHONY: image
-image:
-	docker build -t ${app_name}:$(Version) .
 
 .PHONY: clean
 clean:
